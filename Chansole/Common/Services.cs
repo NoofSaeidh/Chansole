@@ -5,16 +5,24 @@ using Microsoft.Extensions.Logging;
 using Serilog.Debugging;
 using Serilog;
 using Autofac;
+using Chansole.Console;
+using Castle.DynamicProxy;
+using Chansole.Services;
+using Autofac.Extras.DynamicProxy;
+using Castle.Core.Configuration;
+using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
+using Spectre.Console.Cli;
 
-namespace Chansole;
+namespace Chansole.Common;
 
 public static class Services
 {
-    public static IHostBuilder ConfigureServices(this IHostBuilder hostBuilder)
+    public static IHostBuilder ConfigureServices(this IHostBuilder hostBuilder, string[] args)
     {
         hostBuilder.ConfigureServices((host, services) =>
         {
             Registrar.Register(services, host.Configuration);
+            services.AddSingleton(new ConsoleArguments(args));
         });
         hostBuilder.ConfigureContainer<ContainerBuilder>(builder =>
         {
@@ -30,7 +38,7 @@ public static class Services
 
         private Registrar(IServiceCollection services, IConfiguration configuration)
         {
-            _services      = services;
+            _services = services;
             _configuration = configuration;
         }
 
@@ -39,6 +47,12 @@ public static class Services
             var registrar = new Registrar(services, configuration);
             registrar.RegisterLogger();
             registrar.RegisterHostedServices();
+            registrar.RegisterOptions();
+            registrar.RegisterServices();
+        }
+
+        private void RegisterServices()
+        {
         }
 
         private void RegisterLogger()
@@ -66,10 +80,27 @@ public static class Services
         {
             _services.AddHostedService<ConsoleHostedService>();
         }
+
+        private void RegisterOptions()
+        {
+            _services.Configure<ChatGptOptions>(_configuration.GetSection("ChatGpt"))
+                     .Configure<LoggerInterceptorOptions>(_configuration.GetSection("LoggingInterceptor"));
+        }
     }
 
     private class Module : Autofac.Module
     {
+        protected override void Load(ContainerBuilder builder)
+        {
+            builder.RegisterType<LoggerInterceptor>()
+                   .As<IAsyncInterceptor>()
+                   .AsSelf()
+                   .SingleInstance();
 
+            builder.RegisterType<ChatGptService>()
+                   .As<IChatGptService>()
+                   .EnableInterfaceInterceptors()
+                   .InterceptedBy(typeof(LoggerInterceptor));
+        }
     }
 }

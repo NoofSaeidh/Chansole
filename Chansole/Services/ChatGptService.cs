@@ -2,14 +2,16 @@
 using Microsoft.Extensions.Options;
 using OpenAI_API;
 
-namespace Chansole;
+namespace Chansole.Services;
 
 public interface IChatGptService
 {
+    Task<bool> Validate();
 }
 
-public record ChatGptOptions(string SecurityToken)
+public class ChatGptOptions
 {
+    public string? SecurityToken {get; init;}
 }
 
 internal class ChatGptService : IChatGptService
@@ -25,7 +27,6 @@ internal class ChatGptService : IChatGptService
 
     public async Task<bool> Validate()
     {
-        using(var log = _logger.BeginScope)
         return await _client.Auth.ValidateAPIKey();
     }
 }
