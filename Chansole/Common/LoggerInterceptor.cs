@@ -64,7 +64,7 @@ internal class LoggerInterceptor : AsyncInterceptorBase, IInterceptor
         var logger = _logger.ForContext(invocation.TargetType);
         using var operation = logger.OperationAt(_options.Value.CompletionLevel, _options.Value.AbandonmentLevel)
                                     .Begin("Invoking method {Method} with arguments {@Arguments}",
-                                           args: invocation.Arguments.Prepend(invocation.Method.Name));
+                                           invocation.Method.Name, invocation.Arguments);
         using var _ = LogContext.Push(
             new PropertyEnricher("Method", invocation.Method.Name),
             new PropertyEnricher("Type", invocation.TargetType.FullName));
