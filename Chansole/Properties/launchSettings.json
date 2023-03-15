@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Chansole": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    }
+  }
+}
