@@ -1,3 +1,3 @@
 ﻿namespace Chansole.Console;
 
-public record ConsoleArguments(IReadOnlyList<string> Args);
+public record ConsoleArguments(string[] Args);

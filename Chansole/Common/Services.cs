@@ -2,16 +2,25 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+
 using Serilog.Debugging;
 using Serilog;
+
 using Autofac;
+
 using Chansole.Console;
+
 using Castle.DynamicProxy;
+
 using Chansole.Services;
+
 using Autofac.Extras.DynamicProxy;
+
 using Castle.Core.Configuration;
+
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
-using Spectre.Console.Cli;
+
+using Spectre.Console;
 
 namespace Chansole.Common;
 
@@ -38,7 +47,7 @@ public static class Services
 
         private Registrar(IServiceCollection services, IConfiguration configuration)
         {
-            _services = services;
+            _services      = services;
             _configuration = configuration;
         }
 
@@ -101,6 +110,13 @@ public static class Services
                    .As<IChatGptService>()
                    .EnableInterfaceInterceptors()
                    .InterceptedBy(typeof(LoggerInterceptor));
+
+            builder.RegisterInstance(AnsiConsole.Create(new()
+            {
+                Ansi        = AnsiSupport.Detect,
+                ColorSystem = ColorSystemSupport.Detect,
+                Out         = new AnsiConsoleOutput(System.Console.Out),
+            }));
         }
     }
 }

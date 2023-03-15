@@ -6,7 +6,7 @@ namespace Chansole.Services;
 
 public interface IChatGptService
 {
-    Task<bool> Validate();
+    Task<bool> Validate(CancellationToken cancellationToken);
 }
 
 public class ChatGptOptions
@@ -25,8 +25,9 @@ internal class ChatGptService : IChatGptService
         _client = new OpenAIAPI(new APIAuthentication(options.Value.SecurityToken));
     }
 
-    public async Task<bool> Validate()
+    public async Task<bool> Validate(CancellationToken cancellationToken)
     {
+        // todo: token
         return await _client.Auth.ValidateAPIKey();
     }
 }
